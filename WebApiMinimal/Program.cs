@@ -4,7 +4,7 @@ using WebApiMinimal.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddDbContext<Contexto>(options => options.UseSqlServer("Data Source=tcp:webapiminimaldbserver.database.windows.net,1433;Initial Catalog=WebApiMinimal_db;User Id=mateus@webapiminimaldbserver;Password=Suco#7913"));
+builder.Services.AddDbContext<Contexto>(options => options.UseSqlServer(""));
 
 builder.Services.AddSwaggerGen();
 
@@ -12,34 +12,53 @@ var app = builder.Build();
 
 app.UseSwagger();
 
-app.MapPost("AdicionaProduto", async (Produto produto, Contexto contexto) =>
+app.MapPost("AddTotem", async (RequestIdTotem RequestIdTotem, Contexto contexto) =>
 {
-    contexto.Produto.Add(produto);
+    RequestIdTotem.RequestIdBb = 0;
+    RequestIdTotem.RequestIdArbi = "Totem0";
+    contexto.RequestIdTotem.Add(RequestIdTotem);
     await contexto.SaveChangesAsync();
 });
 
-app.MapPost("ExcluirProduto/{id}", async (int id, Contexto contexto) =>
+// app.MapPost("RemoveTotem/{id}", async (int id, Contexto contexto) =>
+// {
+//     var requestIdTotem = await contexto.RequestIdTotem.FirstOrDefaultAsync(p => p.Id == id);
+//     if (requestIdTotem!= null)
+//     {
+//         contexto.RequestIdTotem.Remove(requestIdTotem);
+//         await contexto.SaveChangesAsync();
+//     }
+// });
+
+// app.MapGet("ListTotem", async (Contexto contexto) =>
+// {
+//    return await contexto.RequestIdTotem.ToListAsync();
+// });
+
+app.MapGet("GetTotem/{id}", async (int id,Contexto contexto) =>
 {
-    var produtoExcluir = await contexto.Produto.FirstOrDefaultAsync(p => p.Id == id);
-    if (produtoExcluir!= null)
-    {
-        contexto.Produto.Remove(produtoExcluir);
-        await contexto.SaveChangesAsync();
+   return await contexto.RequestIdTotem.FirstOrDefaultAsync(p=>p.Id ==id);
+});
+app.MapPut("UpdateArbi/{id}", async (int id,Contexto contexto) =>
+{
+    RequestIdTotem? ttm =  await contexto.RequestIdTotem.FirstOrDefaultAsync(p=>p.Id ==id);
+    if(ttm!= null){
+        if(!string.IsNullOrEmpty(ttm.RequestIdArbi)){
+            string[] aux = ttm.RequestIdArbi.Split("Totem");
+            int i = int.Parse(aux[1]);
+            i++;
+            ttm.RequestIdArbi = string.Concat(aux[0],i);
+            await contexto.SaveChangesAsync();
+        }
     }
 });
-
-app.MapGet("ListarProdutos", async (Contexto contexto) =>
+app.MapPut("UpdateBb/{id}", async (int id,Contexto contexto) =>
 {
-   return await contexto.Produto.ToListAsync();
-});
-
-app.MapGet("ObterProduto/{id}", async (int id,Contexto contexto) =>
-{
-   return await contexto.Produto.FirstOrDefaultAsync(p=>p.Id ==id);
-});
-app.MapGet("/", async (Contexto contexto) =>
-{
-    return await contexto.Produto.ToListAsync();
+    RequestIdTotem? ttm =  await contexto.RequestIdTotem.FirstOrDefaultAsync(p=>p.Id ==id);
+    if(ttm!= null){
+        ttm.RequestIdBb++;
+        await contexto.SaveChangesAsync();
+    }
 });
 app.UseSwaggerUI();
 

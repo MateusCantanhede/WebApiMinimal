@@ -8,6 +8,6 @@ namespace WebApiMinimal.Contexts
         public Contexto(DbContextOptions<Contexto> options)
             : base(options) => Database.EnsureCreated();
 
-        public DbSet<Produto> Produto { get; set; }
+        public DbSet<RequestIdTotem> RequestIdTotem { get; set; }
     }
 }
